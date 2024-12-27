@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Home Page</title>
+    <script>
+        function authentication_request() {
+            fetch('/authenticate', {
+                method: 'POST',
+            })
+            .then(response => response.text())
+            .then(data => {
+                fetch('/challenge', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'text/plain',
+                    },
+                    body: data
+                })
+                .then(response => response.json())
+                .then(data => {
+                    const isAuthenticated = data.authenticated;
+                    console.log('Authentication success:', isAuthenticated);
+                    window.location.href = '/restricted_page';
+                })
+                .catch(error => {
+                    console.error('Request failed:', error);
+                });
+            })
+            .catch(error => console.error('Error:', error));
+        }
+    </script>
+</head>
+<body>
+    <h1>Home Page</h1>
+    <button onclick="authentication_request()">Log In</button>
+</body>
+</html>
