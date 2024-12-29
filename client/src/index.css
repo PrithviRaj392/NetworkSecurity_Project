@@ -1,0 +1,6 @@
+/* src/index.css */
+
+/* Add these lines at the top of your CSS file */
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
