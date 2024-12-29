@@ -5,6 +5,7 @@
   "dependencies": {
     "axios": "^1.7.9",
     "cra-template": "1.2.0",
+    "dilithium-crystals": "^1.0.6",
     "fs": "^0.0.1-security",
     "js-base64": "^3.7.7",
     "ntru-legacy": "^1.0.4",

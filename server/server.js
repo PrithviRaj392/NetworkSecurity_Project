@@ -1,8 +1,9 @@
 const express = require("express");
 const cors = require("cors");
+const bodyParser = require("body-parser");
 const fs = require("fs");
 const ntru = require("ntru-legacy");
-const bodyParser = require("body-parser");
+const dilithium = require('dilithium-crystals');
 
 // Initialize the app
 const app = express();
@@ -13,14 +14,29 @@ app.use(cors());
 // Middleware to parse JSON request body
 app.use(bodyParser.json());
 
+
+
+function uint8ArrayToBase64String(uint8Array) {
+  return Buffer.from(uint8Array).toString("base64");
+}
+
+function base64StringToUint8Array(base64String) {
+  return new Uint8Array(atob(base64String).split('').map(char => char.charCodeAt(0)));
+}
+
+
+
 // Define a challenge value (this is the original value to compare against)
 const challengeValue = new Uint8Array([1, 2, 3]);
 
 // Load the public key for encryption
-let publicKey;
+let ntruPublicKey;
+let dilithiumPublicKey;
 try {
-  const publicKeyBase64 = fs.readFileSync("./keys/public_key.txt");
-  publicKey = new Uint8Array(atob(publicKeyBase64).split('').map(char => char.charCodeAt(0)));
+  const ntruPublicKeyBase64 = fs.readFileSync("./keys/ntru_public_key.txt");
+  const dilithiumPublicKeyBase64 = fs.readFileSync("./keys/dilithium_public_key.txt");
+  ntruPublicKey = base64StringToUint8Array(ntruPublicKeyBase64);
+  dilithiumPublicKey = base64StringToUint8Array(dilithiumPublicKeyBase64);
 } catch (error) {
   console.error("Error loading public key:", error);
 }
@@ -30,7 +46,7 @@ async function encryptChallenge() {
   try {
     const encryptedChallengeValue = await ntru.encrypt(
       challengeValue,
-      publicKey
+      ntruPublicKey
     );
     return encryptedChallengeValue;
   } catch (error) {
@@ -44,8 +60,7 @@ let encryptedChallengeValue;
 encryptChallenge().then((encValue) => {
   if (encValue) {
     encryptedChallengeValue = encValue;
-    // Ensure base64 encoding is correct
-    const base64Challenge = Buffer.from(encryptedChallengeValue).toString("base64");
+    const base64Challenge = uint8ArrayToBase64String(encryptedChallengeValue);
     console.log("Base64 Encoded Challenge:", base64Challenge); // Log it for debugging
   }
 });
@@ -60,8 +75,7 @@ app.get("/", (req, res) => {
 // Route to send the encrypted challenge value to the client
 app.get("/authenticate", (req, res) => {
   if (encryptedChallengeValue) {
-    const base64Challenge = Buffer.from(encryptedChallengeValue).toString("base64");
-    // console.log("encryptedChallengeValue:", base64Challenge)
+    const base64Challenge = uint8ArrayToBase64String(encryptedChallengeValue);
     res.json({ encryptedChallenge: base64Challenge });
   } else {
     res.status(500).json({ message: "Error encrypting challenge value" });
@@ -70,23 +84,22 @@ app.get("/authenticate", (req, res) => {
 
 // Route to handle the challenge response and authenticate the user
 app.post("/challenge", async (req, res) => {
-  const { challengeResponse } = req.body; // Assuming challenge response is in the body
+  const { challengeResponseBase64, signatureBase64 } = req.body; // Assuming challenge response is in the body
 
-  if (!challengeResponse) {
+  if (!challengeResponseBase64) {
     return res.status(400).json({ message: "Challenge response missing" });
+  }
+  if (!signatureBase64) {
+    return res.status(400).json({ message: "Signature missing" });
   }
 
   try {
-    // Convert base64 string to a Uint8Array for decryption
-    const responseBuffer = new Uint8Array(Buffer.from(challengeResponse, "base64"));
+    const receivedValue = base64StringToUint8Array(challengeResponseBase64);
+    const signature = base64StringToUint8Array(signatureBase64);
+    const isValid = await dilithium.verifyDetached(signature, receivedValue, dilithiumPublicKey);
 
-
-    // Decrypt the challenge response using the public key (as per NTRU)
-    // const decryptedResponse = await ntru.decrypt(responseBuffer, publicKey);
-
-    // Compare the decrypted challenge response with the original challenge value
-    // if (JSON.stringify(decryptedResponse) === JSON.stringify(challengeValue)) {
-    if (JSON.stringify(responseBuffer) === JSON.stringify(challengeValue)) {
+    // Verify the signature and compare the received value with the original challenge value
+    if (isValid && (JSON.stringify(receivedValue) === JSON.stringify(challengeValue))) {
       return res.json({ status: "success", authenticated: true });
     } else {
       return res.json({ status: "failure", authenticated: false });
