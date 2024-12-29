@@ -61,7 +61,7 @@ encryptChallenge().then((encValue) => {
   if (encValue) {
     encryptedChallengeValue = encValue;
     const base64Challenge = uint8ArrayToBase64String(encryptedChallengeValue);
-    console.log("Base64 Encoded Challenge:", base64Challenge); // Log it for debugging
+    // console.log("Base64 Encoded Challenge:", base64Challenge); // Log it for debugging
   }
 });
 
