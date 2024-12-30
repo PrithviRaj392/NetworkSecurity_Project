@@ -13,26 +13,25 @@ const RestrictedPage = () => {
   }, [navigate]);
 
   // Logout function
-  const handleLogout = () => {
-    localStorage.removeItem("isAuthenticated"); // Remove authentication status
-    navigate("/"); // Redirect to the homepage
+  const handleGoback = () => {
+    navigate("/restricted_home_page"); // Redirect to the homepage
   };
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-indigo-500 to-purple-600">
       <div className="bg-white shadow-lg rounded-lg p-8 max-w-md text-center">
         <h1 className="text-4xl font-extrabold text-indigo-600 mb-4">
-          Restricted Page
+          Restricted Bank Page
         </h1>
         <p className="text-gray-700 text-lg">
-          You are successfully logged in!
+          Rs 100000 has been transfered!
         </p>
         <div className="mt-6">
           <button
-            onClick={handleLogout} // Logout action
+            onClick={handleGoback} // GoBack action
             className="px-6 py-2 bg-red-500 text-white font-semibold rounded-lg shadow-md hover:bg-red-600 focus:outline-none focus:ring-2 focus:ring-red-400"
           >
-            Logout
+            Go Back
           </button>
         </div>
       </div>

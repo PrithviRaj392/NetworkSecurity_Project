@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState} from "react";
 import axios from "axios";
 import { useNavigate } from "react-router-dom";
 import ntru from "ntru-legacy";
@@ -58,7 +58,7 @@ const HomePage = () => {
         setIsAuthenticated(true);
         // Store the authenticated status in localStorage
         localStorage.setItem("isAuthenticated", "true");
-        navigate("/restricted_page");
+        navigate("/restricted_home_page");
       } else {
         alert("Authentication failed");
       }
