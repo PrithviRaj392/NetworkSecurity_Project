@@ -29,12 +29,6 @@ const RestrictedPage = () => {
         </p>
         <div className="mt-6">
           <button
-            onClick={() => navigate("/dashboard")} // Redirect to Dashboard
-            className="px-6 py-2 bg-indigo-500 text-white font-semibold rounded-lg shadow-md hover:bg-indigo-600 focus:outline-none focus:ring-2 focus:ring-indigo-400 mr-4"
-          >
-            Go to Dashboard
-          </button>
-          <button
             onClick={handleLogout} // Logout action
             className="px-6 py-2 bg-red-500 text-white font-semibold rounded-lg shadow-md hover:bg-red-600 focus:outline-none focus:ring-2 focus:ring-red-400"
           >
